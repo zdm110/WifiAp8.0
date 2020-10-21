@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "WifiAp8.0_MainActivity";
     private RelativeLayout mLayout;
-    private Button mBtnStart,mBtnStop;
+    private Button mBtnStart,mBtnStop, mBtnSetting;
 
     private WifiManager mWifiManager;
     private ConnectivityManager mConnectivityManager;
@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtnStart.setOnClickListener(this);
         mBtnStop = (Button) findViewById(R.id.btn_stop);
         mBtnStop.setOnClickListener(this);
+        mBtnSetting = (Button) findViewById(R.id.btn_setting);
+        mBtnSetting.setOnClickListener(this);
 
         mReceiver = new WifiApReceiver();
         IntentFilter filter = new IntentFilter(WIFI_AP_STATE_CHANGED_ACTION);
@@ -53,24 +55,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    /**
+     * 7.1版本需要手动开启热点
+     */
+    private void openWifiApManual() {
+        try{
+            Intent tetherSettings = new Intent();
+
+            if( tetherSettings != null ){
+                tetherSettings.setClassName("com.android.settings",
+                        "com.android.settings.TetherSettings");
+                tetherSettings.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                startActivity(tetherSettings);
+            }
+        }finally {
+            finish();
+        }
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.btn_start:
                 if(getWifiAPState() != WIFI_AP_STATE_ENABLED){
                     if (Build.VERSION.SDK_INT >= 25) {
-                        setWifiConfig("abc","123456789");
                         mConnectivityManager.startTethering(ConnectivityManager.TETHERING_WIFI,
                                 true, new ONStartTetheringCallback());
                     }
                 }
                 break;
+
             case R.id.btn_stop:
                 if(getWifiAPState() != WIFI_AP_STATE_DISABLED){
                     if (Build.VERSION.SDK_INT >= 25) {
                         mConnectivityManager.stopTethering(ConnectivityManager.TETHERING_WIFI);
                     }
                 }
+                break;
+
+            case R.id.btn_setting:
+                openWifiApManual();
                 break;
         }
     }
